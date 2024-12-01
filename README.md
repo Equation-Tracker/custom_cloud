@@ -33,8 +33,8 @@ This project provides a file management system where users can upload, download,
 #### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/Equation-Tracker/custom_cloud.git
+cd custom_cloud
 ```
 
 #### 2. Install dependencies
