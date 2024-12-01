@@ -1,107 +1,173 @@
-# File Management System
+## File Management System - README
 
-This project is a file management system with functionalities like uploading, downloading, listing, and deleting files on a server using Node.js and Express. The client-side application interacts with the server via Fetch API.
+### Project Overview
 
-## Features
+This project provides a file management system where users can upload, download, list, and delete files. The system uses Express.js to handle API requests and Multer for file uploads. It integrates with a MySQL database to track uploaded files and their metadata, and supports functionalities like file listing, deletion, and fetching download tokens.
 
-- Upload files to the server.
-- Retrieve a token-based URL for file access.
-- List all files and directories in the server's upload directory.
-- Download files via a secure token.
-- Delete files and directories with a context menu.
-- Handles nested directories and file type validation.
+### Features:
 
-## Technologies Used
+- **File Upload**: Upload files to user-specific directories.
+- **File Download**: Download files by providing a valid token.
+- **File Listing**: List files and directories in a user-defined folder.
+- **File Deletion**: Delete files or entire directories.
+- **Token-based Authentication**: Use unique tokens for secure file access.
 
-- **Backend**: Node.js, Express, Multer, MySQL (via `mysql2` pool).
-- **Frontend**: HTML, JavaScript.
-- **File Management**: File upload and retrieval with token authentication.
-- **Validation**: MIME type checks for uploaded files.
+### Tech Stack:
 
-## Installation
+- **Backend**: Node.js, Express.js
+- **File Handling**: Multer
+- **Database**: MySQL (for storing file metadata)
+- **File Storage**: Local filesystem (in `uploads/` directory)
+- **Authentication**: Token-based system
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/file-management-system.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd file-management-system
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Configure the MySQL database in `config.js`.
-5. Start the server:
-   ```bash
-   node server.js
-   ```
-6. Open the `index.html` in your browser for the client-side interface.
+---
 
-## API Endpoints
+### Installation Instructions
 
-### Upload File
+#### Prerequisites
 
-**POST** `/upload`
+- Node.js (>=14.x.x)
+- MySQL
+- NPM or Yarn
 
+#### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd <project-directory>
+```
+
+#### 2. Install dependencies
+
+Run the following command to install the required dependencies:
+
+```bash
+npm install
+```
+
+#### 3. Set up MySQL Database
+
+Create a MySQL database and run the following SQL commands to set up the required tables.
+
+```sql
+CREATE DATABASE file_management;
+
+USE file_management;
+
+CREATE TABLE tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    fileName VARCHAR(255) NOT NULL,
+    fullPath VARCHAR(255) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 4. Configure Database Connection
+
+Edit the `config.js` file to configure your MySQL connection:
+
+```js
+import mysql from "mysql2/promises";
+
+export const pool = mysql.createPool({
+  host: "localhost",
+  user: "root",
+  password: "yourpassword",
+  database: "file_management",
+});
+```
+
+#### 5. Run the Application
+
+To start the server, run:
+
+```bash
+npm start
+```
+
+The server will be running on `http://localhost:4000`.
+
+---
+
+### API Endpoints
+
+#### 1. **File Upload**
+
+- **URL**: `POST /upload`
+- **Description**: Upload a file to the server.
 - **Headers**:
-  - `filePath`: Path where the file should be stored.
-- **Body**:
-  - `file`: Form-data file to be uploaded.
+  - `filePath`: User-defined path to store the file.
+- **Body**: Form-data with the file field (name `file`).
 
-### View File
+#### 2. **File Download**
 
-**GET** `/storage/:file`
+- **URL**: `POST /download/:fileName`
+- **Description**: Download a file by providing the file name and a valid token.
+- **Body**: JSON with the token.
 
-- **Query**:
-  - `token`: Authentication token.
+#### 3. **List Files**
 
-### Download File
+- **URL**: `POST /listFiles`
+- **Description**: List all files in the root directory (`uploads/`).
+- **Body**: None
 
-**POST** `/download/:file`
+#### 4. **List Files in Directory**
 
-- **Query**:
-  - `token`: Authentication token.
+- **URL**: `POST /listFiles/:dirName`
+- **Description**: List files in a specific directory.
+- **Body**: None
 
-### List Files
+#### 5. **Delete File/Directory**
 
-**POST** `/listFiles/:path?`
+- **URL**: `POST /delete`
+- **Description**: Delete a file or directory.
+- **Body**: JSON with the path of the file or directory to be deleted.
 
-- **Path Parameter**:
-  - `path`: Directory to list files from.
+#### 6. **Get File Token**
 
-### Delete File or Directory
+- **URL**: `POST /getToken`
+- **Description**: Retrieve a token to access a file.
+- **Body**: JSON with the `path` of the file.
 
-**POST** `/delete`
+---
 
-- **Body**:
-  - `path`: Path to the file or directory.
+### Frontend Instructions
 
-### Generate Token
+#### 1. File Upload:
 
-**POST** `/getToken`
+The frontend sends a POST request to `/upload` to upload a file. The file is uploaded using `FormData` and headers are sent to specify the path for storage.
 
-- **Body**:
-  - `path`: Path to the file.
+#### 2. File Listing:
 
-## Usage
+The frontend lists the files from the server by sending a POST request to `/listFiles`. It dynamically renders the file structure and allows the user to navigate through directories and view file names.
 
-1. **Upload a File**:
-   - Use the file input and submit button on the client-side interface.
-2. **View Files**:
-   - Click on directories to explore or files to generate a view URL.
-3. **Delete Files**:
-   - Right-click on a file or directory to delete it.
+#### 3. File Download:
 
-## Security
+To download a file, the frontend sends a POST request to `/getToken` with the file path to obtain a valid token. This token is then appended to the download URL for secure access.
 
-- Prevents directory traversal attacks by sanitizing file paths.
-- Validates file MIME types during upload.
-- Uses secure token-based access for file operations.
+#### 4. File Deletion:
 
-## Future Enhancements
+The frontend provides an option to delete a file or directory. It sends a POST request to `/delete` with the path of the file or directory to be deleted.
 
-- Add user authentication.
-- Provide file previews for supported formats.
-- Optimize large file uploads with streaming.
+---
+
+## Project Structure
+
+```
+|-- uploads/                  # File storage directory
+|-- config.js                 # Database configuration
+|-- server.js                 # Main server file
+|-- package.json              # Project metadata
+|-- README.md                 # Documentation
+```
+
+---
+
+### Troubleshooting
+
+1. **CORS Issues**: If you're encountering CORS-related errors, make sure that the frontend is running on a different port than the backend and ensure the backend has the correct CORS settings.
+
+2. **Missing Files or Directories**: Make sure that the `uploads/` directory exists and that it has the appropriate permissions for file storage.
+
+3. **Database Issues**: Ensure that MySQL is running and the database schema is set up correctly. Check the database connection settings in `config.js`.
